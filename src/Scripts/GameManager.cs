@@ -2,150 +2,150 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(-100)]
-public class GameManager : MonoBehaviour
+public class AdministradorDeJuego : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    public static AdministradorDeJuego Instancia { get; private set; }
 
-    [SerializeField] private Ghost[] ghosts;
+    [SerializeField] private Fantasma[] fantasmas;
     [SerializeField] private Pacman pacman;
-    [SerializeField] private Transform pellets;
-    [SerializeField] private Text gameOverText;
-    [SerializeField] private Text scoreText;
-    [SerializeField] private Text livesText;
+    [SerializeField] private Transform bolitas;
+    [SerializeField] private Text textoFinDeJuego;
+    [SerializeField] private Text textoPuntuacion;
+    [SerializeField] private Text textoVidas;
 
-    public int score { get; private set; } = 0;
-    public int lives { get; private set; } = 3;
+    public int puntuacion { get; private set; } = 0;
+    public int vidas { get; private set; } = 3;
 
-    private int ghostMultiplier = 1;
+    private int multiplicadorFantasma = 1;
 
     private void Awake()
     {
-        if (Instance != null) {
+        if (Instancia != null) {
             DestroyImmediate(gameObject);
         } else {
-            Instance = this;
+            Instancia = this;
         }
     }
 
     private void OnDestroy()
     {
-        if (Instance == this) {
-            Instance = null;
+        if (Instancia == this) {
+            Instancia = null;
         }
     }
 
     private void Start()
     {
-        NewGame();
+        NuevoJuego();
     }
 
     private void Update()
     {
-        if (lives <= 0 && Input.anyKeyDown) {
-            NewGame();
+        if (vidas <= 0 && Input.anyKeyDown) {
+            NuevoJuego();
         }
     }
 
-    private void NewGame()
+    private void NuevoJuego()
     {
-        SetScore(0);
-        SetLives(3);
-        NewRound();
+        EstablecerPuntuacion(0);
+        EstablecerVidas(3);
+        NuevaRonda();
     }
 
-    private void NewRound()
+    private void NuevaRonda()
     {
-        gameOverText.enabled = false;
+        textoFinDeJuego.enabled = false;
 
-        foreach (Transform pellet in pellets) {
-            pellet.gameObject.SetActive(true);
+        foreach (Transform bolita in bolitas) {
+            bolita.gameObject.SetActive(true);
         }
 
-        ResetState();
+        ReiniciarEstado();
     }
 
-    private void ResetState()
+    private void ReiniciarEstado()
     {
-        for (int i = 0; i < ghosts.Length; i++) {
-            ghosts[i].ResetState();
+        for (int i = 0; i < fantasmas.Length; i++) {
+            fantasmas[i].ReiniciarEstado();
         }
 
-        pacman.ResetState();
+        pacman.ReiniciarEstado();
     }
 
-    private void GameOver()
+    private void FinDeJuego()
     {
-        gameOverText.enabled = true;
+        textoFinDeJuego.enabled = true;
 
-        for (int i = 0; i < ghosts.Length; i++) {
-            ghosts[i].gameObject.SetActive(false);
+        for (int i = 0; i < fantasmas.Length; i++) {
+            fantasmas[i].gameObject.SetActive(false);
         }
 
         pacman.gameObject.SetActive(false);
     }
 
-    private void SetLives(int lives)
+    private void EstablecerVidas(int vidas)
     {
-        this.lives = lives;
-        livesText.text = "x" + lives.ToString();
+        this.vidas = vidas;
+        textoVidas.text = "x" + vidas.ToString();
     }
 
-    private void SetScore(int score)
+    private void EstablecerPuntuacion(int puntuacion)
     {
-        this.score = score;
-        scoreText.text = score.ToString().PadLeft(2, '0');
+        this.puntuacion = puntuacion;
+        textoPuntuacion.text = puntuacion.ToString().PadLeft(2, '0');
     }
 
-    public void PacmanEaten()
+    public void PacmanComido()
     {
-        pacman.DeathSequence();
+        pacman.SecuenciaMuerte();
 
-        SetLives(lives - 1);
+        EstablecerVidas(vidas - 1);
 
-        if (lives > 0) {
-            Invoke(nameof(ResetState), 3f);
+        if (vidas > 0) {
+            Invoke(nameof(ReiniciarEstado), 3f);
         } else {
-            GameOver();
+            FinDeJuego();
         }
     }
 
-    public void GhostEaten(Ghost ghost)
+    public void FantasmaComido(Fantasma fantasma)
     {
-        int points = ghost.points * ghostMultiplier;
-        SetScore(score + points);
+        int puntos = fantasma.puntos * multiplicadorFantasma;
+        EstablecerPuntuacion(puntuacion + puntos);
 
-        ghostMultiplier++;
+        multiplicadorFantasma++;
     }
 
-    public void PelletEaten(Pellet pellet)
+    public void BolitaComida(Bolita bolita)
     {
-        pellet.gameObject.SetActive(false);
+        bolita.gameObject.SetActive(false);
 
-        SetScore(score + pellet.points);
+        EstablecerPuntuacion(puntuacion + bolita.puntos);
 
-        if (!HasRemainingPellets())
+        if (!HayBolitasRestantes())
         {
             pacman.gameObject.SetActive(false);
-            Invoke(nameof(NewRound), 3f);
+            Invoke(nameof(NuevaRonda), 3f);
         }
     }
 
-    public void PowerPelletEaten(PowerPellet pellet)
+    public void BolitaDePoderComida(BolitaDePoder bolita)
     {
-        for (int i = 0; i < ghosts.Length; i++) {
-            ghosts[i].frightened.Enable(pellet.duration);
+        for (int i = 0; i < fantasmas.Length; i++) {
+            fantasmas[i].aterrorizado.Habilitar(bolita.duracion);
         }
 
-        PelletEaten(pellet);
-        CancelInvoke(nameof(ResetGhostMultiplier));
-        Invoke(nameof(ResetGhostMultiplier), pellet.duration);
+        BolitaComida(bolita);
+        CancelInvoke(nameof(ReiniciarMultiplicadorFantasma));
+        Invoke(nameof(ReiniciarMultiplicadorFantasma), bolita.duracion);
     }
 
-    private bool HasRemainingPellets()
+    private bool HayBolitasRestantes()
     {
-        foreach (Transform pellet in pellets)
+        foreach (Transform bolita in bolitas)
         {
-            if (pellet.gameObject.activeSelf) {
+            if (bolita.gameObject.activeSelf) {
                 return true;
             }
         }
@@ -153,9 +153,8 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    private void ResetGhostMultiplier()
+    private void ReiniciarMultiplicadorFantasma()
     {
-        ghostMultiplier = 1;
+        multiplicadorFantasma = 1;
     }
-
 }
