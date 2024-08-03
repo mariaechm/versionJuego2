@@ -4,53 +4,54 @@ using UnityEngine;
 public class AnimatedSprite : MonoBehaviour
 {
     public Sprite[] sprites = new Sprite[0];
-    public float tiempoAnimacion = 0.25f;
-    public bool bucle = true;
+    public float animationTime = 0.25f;
+    public bool loop = true;
 
-    private SpriteRenderer renderizadorSprite;
-    private int fotogramaAnimacion;
+    private SpriteRenderer spriteRenderer;
+    private int animationFrame;
 
     private void Awake()
     {
-        renderizadorSprite = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void OnEnable()
     {
-        renderizadorSprite.enabled = true;
+        spriteRenderer.enabled = true;
     }
 
     private void OnDisable()
     {
-        renderizadorSprite.enabled = false;
+        spriteRenderer.enabled = false;
     }
 
     private void Start()
     {
-        InvokeRepeating(nameof(Avanzar), tiempoAnimacion, tiempoAnimacion);
+        InvokeRepeating(nameof(Advance), animationTime, animationTime);
     }
 
-    private void Avanzar()
+    private void Advance()
     {
-        if (!renderizadorSprite.enabled) {
+        if (!spriteRenderer.enabled) {
             return;
         }
 
-        fotogramaAnimacion++;
+        animationFrame++;
 
-        if (fotogramaAnimacion >= sprites.Length && bucle) {
-            fotogramaAnimacion = 0;
+        if (animationFrame >= sprites.Length && loop) {
+            animationFrame = 0;
         }
 
-        if (fotogramaAnimacion >= 0 && fotogramaAnimacion < sprites.Length) {
-            renderizadorSprite.sprite = sprites[fotogramaAnimacion];
+        if (animationFrame >= 0 && animationFrame < sprites.Length) {
+            spriteRenderer.sprite = sprites[animationFrame];
         }
     }
 
-    public void Reiniciar()
+    public void Restart()
     {
-        fotogramaAnimacion = -1;
+        animationFrame = -1;
 
-        Avanzar();
+        Advance();
     }
+
 }
