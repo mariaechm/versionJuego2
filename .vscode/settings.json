@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "InterfazJuego-main.sln"
+    "dotnet.defaultSolution": "Pacman.sln"
 }
